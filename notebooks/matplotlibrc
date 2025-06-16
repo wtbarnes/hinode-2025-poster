@@ -1,0 +1,25 @@
+figure.figsize: 10.52, 6.50
+axes.titlesize: 14
+axes.labelsize: 14
+legend.fontsize: 10
+legend.frameon: false
+legend.framealpha: 1
+xtick.labelsize: 10
+ytick.labelsize: 10
+xtick.major.pad: 3
+xtick.minor.pad: 3
+ytick.major.pad: 3
+ytick.minor.pad: 3
+xtick.direction: in
+ytick.direction: in
+savefig.bbox: tight
+lines.linewidth: 2
+patch.linewidth: 2
+font.family: sans-serif
+#font.serif: 
+#font.sans-serif: 
+#font.monospace: 
+text.usetex: true
+pgf.rcfonts: false
+pgf.texsystem: lualatex
+savefig.format: pgf

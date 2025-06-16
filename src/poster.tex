@@ -17,13 +17,24 @@
 \usepackage{booktabs}
 \usepackage{tikz}
 \usepackage{pgfplots}
-\pgfplotsset{compat=1.14}
+\pgfplotsset{compat=newest}
 \usepackage{anyfontsize}
 \usepackage{multicol}
 \usepackage[numbers]{natbib}
 \usepackage{import}
 \usepackage{siunitx}
 \usepackage{float}
+\usepackage{amsmath}
+
+% ====================
+% Colors
+% ====================
+\definecolor{C0}{HTML}{1f77b4}
+\definecolor{C1}{HTML}{ff7f0e}
+\definecolor{C2}{HTML}{2ca02c}
+\definecolor{C3}{HTML}{d62728}
+\definecolor{C4}{HTML}{9467bd}
+\definecolor{C5}{HTML}{8c564b}
 
 % ====================
 % Custom Commands
@@ -31,6 +42,8 @@
 % This is to work around a bug in matplotlib that leaves a command undefined when
 % using pgf figures: https://github.com/matplotlib/matplotlib/issues/27907
 \def\mathdefault#1{\displaystyle #1}
+\newcommand{\emd}{\textup{EM}(T)}
+\DeclareMathOperator*{\argmax}{argmax}
 
 % ====================
 % Lengths
@@ -40,8 +53,8 @@
 % (N+1)*\sepwidth + N*\colwidth = \paperwidth
 \newlength{\sepwidth}
 \newlength{\colwidth}
-\setlength{\sepwidth}{0.0167\paperwidth}
-\setlength{\colwidth}{0.45\paperwidth}
+\setlength{\sepwidth}{0.013\paperwidth}
+\setlength{\colwidth}{0.48\paperwidth}
 \newcommand{\separatorcolumn}{\begin{column}{\sepwidth}\end{column}}
 
 % ====================
@@ -107,25 +120,67 @@
 
   \end{block}
 
-  \begin{block}{Observing Active Regions over Multiple Rotations}
+  \begin{block}{Identifying Active Regions Observed over Multiple Rotations}
 
-    Give some details about how the regions were selected, what data were used
+    \begin{figure}
+      \begin{columns}[T]
+        \begin{column}{0.45\colwidth}
+            \begin{itemize}
+              \item \citet{mason_active_2023} identified NOAA classifications of many ARs which persisted over multiple solar rotations.
+              \item AR coordinates identified using the Heliophysics Event Knowledgebase (HEK).
+              \item \alert{Exclude ARs with C-class flares and above} $\pm\SI{6}{\hour}$ of when AR appeared at disk center.
+              \item Selected ARs with corresponding ``HPW021'' EIS raster $\pm\SI{4.5}{\day}$ of when AR was at disk center.
+              \item Require $\ge\SI{60}{\percent}$ overlap between $(\ang{;6;},\ang{;6;})$ AR bounding box and de-rotated EIS raster.
+              \item Identified three ARs (\alert{12303, 12488, 12682}) observed on \textcolor{C0}{first} and \textcolor{C1}{second} rotation and a fourth AR (\alert{12674}) observed after a \textcolor{C2}{third} rotation. 
+            \end{itemize}
+          \caption{Positions of ARs for all rotations. NOAA number color indicates rotation, with each \textcolor{C0}{first} rotation denoting a distinct AR (read L to R). Solid boxes indicate $(\ang{;6;},\ang{;6;})$ bounding box centered on HEK AR position. Dashed boxes indicate nominal EIS raster position. Dotted boxes indicate EIS raster position de-rotated to when AR was at disk center.}
+          \label{fig:aia_eis_fov}
+        \end{column}
+        \begin{column}{0.55\colwidth}
+          \import{figures/}{aia_eis_fulldisk_bbox.pgf}
+        \end{column}
+      \end{columns}
+    \end{figure}
+  \end{block}
 
-    Plot AIA images (171) at disk center along with 2 EIS rasters (hot and cool line) for all four regions for all rotations
+  \vspace{-35pt}
 
-    Show full-disk AIA images with EIS and AR bounding boxes?
+  \begin{block}{AIA and EIS Observations}
+    
+    \begin{figure}
+      \begin{columns}[T]
+        \begin{column}{0.55\colwidth}
+          \import{figures/}{aia_cutouts_eis_rasters.pgf}
+        \end{column}
+        \begin{column}{0.45\colwidth}
+          \caption{AIA \SI{193}{\angstrom} and EIS Fe XII \SI{195.119}{\angstrom} observations for all ARs. Each row indicates a distinct AR and each column a subsequent rotation. Black boxes overlaid on the EIS observations indicate the regions over which the intensity is averaged when computing the $\emd$ in the panels below. AIA observations $\pm\SI{6}{\hour}$ of when the AR appeared at disk center are co-aligned to the time closest to when the AR appeared at disk center, normalized by exposure time, and corrected for degradation for the \SIlist{94;131;171;193;211;335}{\angstrom} channels. For each EIS observation, we fit each line in Table 2 of \citet{warren_systematic_2012}, except Ca XVI \SI{208.604}{\angstrom}, Ca XVII \SI{192.858}{\angstrom}, and Ar XIV \SI{194.396}{\angstrom}, using the \texttt{eispac} Python package \citep{weberg_eispac_2023}. The EIS pointing is corrected by cross-correlating the AIA \SI{193}{\angstrom} and EIS \SI{195.119}{\angstrom} images. Additionally, the radiometric calibration of \citet{del_zanna_hinode_2025} is used.} 
+          \label{fig:aia_eis_intensities}
+        \end{column}
+      \end{columns}
+    \end{figure}
 
   \end{block}
 
-  \begin{block}{Differential Emission Measure Analysis}
+  \vspace{-35pt}
 
-    List what lines were used in the analysis, what method
+  \begin{block}{Deriving Emission Measure Distributions with EIS}
 
-    Show slope maps for 1-2 regions
+    \begin{figure}
+      \centering
+      \import{figures/}{em_distributions_1d.pgf}
+      \label{fig:em_distributions_1d}
+    \end{figure}
 
-    Show histograms of slopes for all 4 regions
+    \vspace{-30pt}
 
-    Maybe show DEM curves from selected subregion from each rotation of all regions? With slopes?
+    \begin{itemize}
+      \item Derive $\emd$ from mean intensities in black boxes in Fig. \autoref{fig:aia_eis_intensities} using method of \citet{hannah_differential_2012} constrained by contribution functions from lines in Table 2 of \citet{warren_systematic_2012}.
+      \item For $T\le T_\mathrm{peak}$, $\mathrm{EM}\sim T^a$---$a$ is the \alert{EM slope} \citep{jordan_structure_1975}
+      \item Expect $2\lesssim a\lesssim2.5$ for uninterrupted radiative cooling \citep{cargill_implications_1994}; \alert{Larger $a$---HF heating; smaller $a$---LF heating}
+      \item Fit $T^a$ between \SI{0.7}{\mega\kelvin} and $T_{peak}$--indicated by thick, solid line.
+      \item \alert{No significant change in slope from one rotation to the next for all ARs.}
+      \item \alert{ARs 12488 and 12674 show more hot plasma} in \textcolor{C0}{first} rotation compared to \textcolor{C1}{second} rotation.
+    \end{itemize}
 
   \end{block}
 
@@ -135,45 +190,96 @@
 
 \begin{column}{\colwidth}
 
+  \begin{block}{Emission Measure Slope}
+
+    \begin{figure}
+      \centering
+      \begin{columns}[c]
+        \begin{column}{0.57\colwidth}
+          \import{figures/}{em_slope_maps.pgf}
+        \end{column}
+        \begin{column}{0.43\colwidth}
+          \caption{Emission measure slopes computed in each EIS raster from the \textcolor{C0}{first}, \textcolor{C1}{second}, and \textcolor{C2}{third} rotations of NOAA 12674. $a$ is computed by first deriving the $\emd$ in each pixel of the raster, assuming an uncertainty of \SI{20}{\percent} on each line used to constrain the inversion. Then, $T^a$ is fit to the $\emd$ in each pixel between \SI{0.7}{\mega\kelvin} and $T_{peak}=\argmax_T{\emd}$. Pixels are masked and colored white if they were masked in the original raster in any line, fall below \SI{1e25}{\raiseto{-5}\centi\meter} anywhere in the fitting range, or if quality of the power-law fit does not meet the criteria $r^2<0.5$. This process is repeated for each AR shown in Fig. \autoref{fig:aia_eis_intensities}.}
+          \label{fig:em_slope_maps}
+        \end{column}
+      \end{columns}
+    \end{figure}
+
+    \vspace{-35pt}
+
+    \begin{figure}
+      \centering
+      \import{figures/}{em_slope_histograms.pgf}
+      \vspace{-20pt}
+      \caption{Histograms of $\emd$ slopes, $a$, from all unmasked pixels in each rotation of each AR studied. In each panel, the histograms are normalized as the EIS rasters may be of different sizes. Note that there \alert{is no consistent pattern in the evolution of the distribution of $a$ across these four ARs}.}
+      \label{fig:em_slope_histograms}
+    \end{figure}
+
+  \end{block}
+
+  \vspace{-35pt}
+
   \begin{block}{Time Lag Analysis}
 
-    Very brief description of method, data used
+    \vspace{-20pt}
 
-    For a few selected channel pairs, show time lag maps for all regions
+    \begin{figure}
+      \centering
+      \begin{columns}[T]
+        \begin{column}{0.65\colwidth}
+          \import{figures/}{timelag_maps.pgf}
+        \end{column}
+        \begin{column}{0.35\colwidth}
+          \caption{Maps of time lags for the 211-193 AIA channel pair for all three rotations of 12674 computed by finding time delay which maximizes cross-correlation between \SI{12}{\hour} intensity time series of \SIlist{211;193}{\angstrom} channels \citep{viall_evidence_2012}. Channels are ordered ``hot-cold'' such that a positive time lag implies cooling. Pixels with maximum cross correlation $<0.2$ are masked.}
+          \label{fig:timelag_maps}
+        \end{column}
+      \end{columns}
+    \end{figure}
 
-    For a few selected channel pairs, show histograms for all regions for all rotations overlaid
+    \vspace{-35pt}
+
+    \begin{figure}
+      \centering
+      \import{figures/}{timelag_histograms.pgf}
+      \caption{Distributions of unmasked time lags for three selected channel pairs (rows) for all four ARs (columns) over each rotation. The bin size is \SI{5}{\minute}. There is \alert{no clear trend in time lag evolution} in any channel pair over all four ARs, though \alert{12488 and 12682 show similar distributions in all channel pairs}.} 
+      \label{fig:timelag_histograms}
+    \end{figure}
+
+  \end{block}
+
+  \vspace{-35pt}
+
+  \begin{block}{Potential Field Extrapolations}
+
+    \vspace{-35pt}
+
+    \begin{columns}[T]
+      \begin{column}{0.333\colwidth}
+        \begin{figure}
+          \centering
+          \import{figures/}{field_extrapolations_12674.pgf}
+          \caption{Fieldlines traced from potential field extrapolation calculated from HMI LOS magnetogram for \textcolor{C0}{first} rotation of 12674 overlaid on an AIA \SI{171}{\angstrom} image.} 
+          \label{fig:field_extrapolation}
+        \end{figure}
+      \end{column}
+      \begin{column}{0.667\colwidth}
+        \begin{figure}
+          \centering
+          \import{figures/}{fieldline_footpoint_ratios.pgf}
+          \caption{Distributions of ratios of field strengths at opposite footpoints as calculated from a potential field extrapolation from each AR (e.g. Fig. \autoref{fig:field_extrapolation}). Loops with both footpoints rooted in strong field may exhibit ``quenched'' heating \citep{tiwari_new_2017}.} 
+          \label{fig:fieldline_footpoint_ratios}
+        \end{figure}
+      \end{column}
+    \end{columns}
 
   \end{block}
 
-  \begin{block}{Very Hot Plasma}
-    
-    Show isolated Fe XVIII emission from AIA
-
-    Also show hottest EIS line for each region
-
-  \end{block}
-
-  \begin{block}{Magnetic Field Extrapolations}
-
-    For one region, show evolution of potential field over rotations
-
-    Show histograms of field strength over all traced field lines
-
-    Show histograms of ratio of field strength between each footpoint
-
-  \end{block}
-
-  \begin{block}{Conclusions}
-
-    Conclusions go here
-
-  \end{block}
+  \vspace{-25pt}
 
   \begin{block}{References}
     \scriptsize
-    WTB was supported by NASA.
-    This research used version 5.0.1 of the \texttt{sunpy} open source software package \citep{the_sunpy_community_sunpy_2020}.
-    This research used verion 0.7 of the \texttt{aiapy} open source software package \citep{barnes_aiapy_2020}.
+    This research is funded by NASA grant 80NSSC24K0256 through the ROSES 2023 Heliophysics Supporting Research program.
+    This research used v7.0.0 of \texttt{sunpy} \citep{the_sunpy_community_sunpy_2020}.
     \begin{multicols}{2}
       \bibliographystyle{aasjournal.bst}
       \bibliography{references.bib}
